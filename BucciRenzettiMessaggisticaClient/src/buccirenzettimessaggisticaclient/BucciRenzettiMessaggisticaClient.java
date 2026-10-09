@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Scanner;
 
 /**
  *
@@ -22,8 +23,12 @@ public class BucciRenzettiMessaggisticaClient {
      * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException {
+        String msg;
+        Scanner s = new Scanner(System.in);
+        
         while(true){
-           String msg="Ciao Server";
+            System.out.print("Cosa vuoi scrivere al client?: ");
+            msg= s.nextLine();
             try (Socket client = new Socket("10.205.0.50",5555)) {
             OutputStream outputStream = client.getOutputStream();
             DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
@@ -31,7 +36,6 @@ public class BucciRenzettiMessaggisticaClient {
             InputStream inputStream = client.getInputStream();
             DataInputStream dataInputStream = new DataInputStream(inputStream);
             String response = dataInputStream.readUTF();
-            System.out.println("Risposta dal server: " + response);
             } 
         }
         
