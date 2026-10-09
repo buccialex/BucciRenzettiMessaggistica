@@ -24,7 +24,7 @@ public class BucciRenzettiMessaggisticaClient {
     public static void main(String[] args) throws IOException {
         while(true){
            String msg="Ciao Server";
-            try (Socket client = new Socket("10.205.0.50",5555)) {
+            try (Socket client = new Socket("localhost",5555)) {
             OutputStream outputStream = client.getOutputStream();
             DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
             dataOutputStream.writeUTF(msg);

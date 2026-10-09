@@ -22,8 +22,9 @@ public class BucciRenzettiMessaggisticaServer {
 
         boolean isRunning = true;
         try {
+            ServerSocket serverSocket = new ServerSocket(5555);
             while (isRunning) {
-                ServerSocket serverSocket = new ServerSocket(5555);
+                
                 Socket clientSocket = serverSocket.accept();
                 InputStream inputStream = clientSocket.getInputStream();
                 DataInputStream dataInputStream = new DataInputStream(inputStream);
@@ -32,11 +33,12 @@ public class BucciRenzettiMessaggisticaServer {
                 OutputStream outputStream = clientSocket.getOutputStream();
                 DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 // Invia dati al client
-                String response = "Ciao, renzo!";
-                dataOutputStream.writeUTF(response);
+                
+                System.out.println(clientMessage);
 // Chiudi il socket del client quando hai finito con questo client
                 
              }
+            
         }catch (IOException ex) {
             System.getLogger(BucciRenzettiMessaggisticaServer.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
