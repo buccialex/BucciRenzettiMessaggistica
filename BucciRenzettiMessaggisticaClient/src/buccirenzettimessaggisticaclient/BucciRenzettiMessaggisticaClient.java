@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package buccirenzettimessaggisticaclient;
 
 import java.io.DataInputStream;
@@ -18,27 +14,20 @@ import java.util.Scanner;
  */
 public class BucciRenzettiMessaggisticaClient {
 
-     /**
-     * @param args the command line arguments
-     * @throws java.io.IOException
-     */
     public static void main(String[] args) throws IOException {
         String msg;
         Scanner s = new Scanner(System.in);
-        
-        while(true){
-            System.out.print("Cosa vuoi scrivere al client?: ");
-            msg= s.nextLine();
-            try (Socket client = new Socket("10.205.0.50",5555)) {
-            OutputStream outputStream = client.getOutputStream();
-            DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+        Socket client = new Socket("localhost", 5555);
+        OutputStream outputStream = client.getOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+        InputStream inputStream = client.getInputStream();
+        DataInputStream dataInputStream = new DataInputStream(inputStream);
+        while (true) {
+            System.out.print("Cosa vuoi scrivere al server?: ");
+            msg = s.nextLine();
             dataOutputStream.writeUTF(msg);
-            InputStream inputStream = client.getInputStream();
-            DataInputStream dataInputStream = new DataInputStream(inputStream);
             String response = dataInputStream.readUTF();
-            } 
+            System.out.println(response);
         }
-        
     }
-    
 }
