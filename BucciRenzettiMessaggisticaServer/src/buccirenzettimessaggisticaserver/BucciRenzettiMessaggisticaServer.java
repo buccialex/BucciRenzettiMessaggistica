@@ -8,6 +8,7 @@ import java.io.*;
 import java.net.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 /**
  *
@@ -19,28 +20,34 @@ public class BucciRenzettiMessaggisticaServer {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-
-        boolean isRunning = true;
-        try {
-            ServerSocket serverSocket = new ServerSocket(5555);
-            while (isRunning) {
-                
-                Socket clientSocket = serverSocket.accept();
-                InputStream inputStream = clientSocket.getInputStream();
-                DataInputStream dataInputStream = new DataInputStream(inputStream);
-                String clientMessage = dataInputStream.readUTF();
-                // Ottenere il flusso di output per inviare dati al client
-                OutputStream outputStream = clientSocket.getOutputStream();
-                DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-// Invia dati al client
-                
-                System.out.println(clientMessage);
-// Chiudi il socket del client quando hai finito con questo client
-                
-             }
+        
+        int porta = 5555;
+        
+        try{
+            ServerSocket serverSocket = new ServerSocket(porta);
+            Socket clientSocket = serverSocket.accept();
+            ThreadGestoreServer gestore = new ThreadGestoreServer(clientSocket);
+            Thread t = new Thread(gestore);
+            t.start();
             
-        }catch (IOException ex) {
-            System.getLogger(BucciRenzettiMessaggisticaServer.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            DataOutputStream dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+            Scanner scanner = new Scanner(System.in);
+            
+            while (scanner.hasNextLine()) {
+                String messaggioUscita = scanner.nextLine();
+                
+                // Invia il messaggio al client
+                dataOutputStream.writeUTF(messaggioUscita);
+                dataOutputStream.flush();
+                
+                if (messaggioUscita.equalsIgnoreCase("exit")) {
+                    break;
+                }
+                System.out.print("Tu: ");
+            }
+        } catch (IOException ex){
+            System.out.println("errore");
         }
-    }
+        
+}
 }
