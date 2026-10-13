@@ -1,39 +1,79 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package buccirenzettimessaggisticaserver;
 
-
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-/**
- *
- * @author Bux
- */
 
-public class ThreadGestoreServer implements Runnable{
-    private Socket clientSocket;
-    
-    public ThreadGestoreServer(Socket clientSocket) {
+public class ThreadGestoreServer implements Runnable {
+
+    private final Socket clientSocket;
+    private final BucciRenzettiMessaggisticaServer server;
+    private DataInputStream in;
+    private DataOutputStream out;
+    private boolean attivo = true;
+
+    public ThreadGestoreServer(Socket clientSocket, BucciRenzettiMessaggisticaServer server) {
         this.clientSocket = clientSocket;
+        this.server = server;
+
+        try {
+            this.in = new DataInputStream(clientSocket.getInputStream());
+            this.out = new DataOutputStream(clientSocket.getOutputStream());
+        } catch (IOException e) {
+            chiudiConnessione();
+        }
     }
 
     @Override
     public void run() {
-        try (DataInputStream dataInputStream = new DataInputStream(clientSocket.getInputStream())) {
-            while (true) {
-                // Legge il messaggio formattato in UTF dal client
-                String message = dataInputStream.readUTF();
-                System.out.println("\nClient: " + message);
-                System.out.print("Tu: ");
+        // Registra il client attivo sul server
+        server.aggiungiClient(this);
+
+        try {
+            while (attivo) {
+                // Resta in ascolto dei messaggi inviati da questo client
+                String messaggio = in.readUTF();
+
+                if (messaggio.equalsIgnoreCase("exit")) {
+                    break;
+                }
+
+                System.out.println("Client [" + clientSocket.getPort() + "]: " + messaggio);
+
+                // Inoltra il messaggio a tutti i client connessi
+                server.broadcast("Client [" + clientSocket.getPort() + "]: " + messaggio, this);
             }
         } catch (IOException e) {
-            // Quando il client si disconnette, readUTF lancia un'eccezione
-            System.out.println("\nConnessione chiusa dal client.");
+            System.out.println("Client disconnesso: " + clientSocket.getRemoteSocketAddress());
+        } finally {
+            chiudiConnessione();
         }
     }
-            
-            
+
+    // Invia un messaggio verso il client associato a questo socket
+    public synchronized void inviaMessaggio(String messaggio) {
+        if (!attivo) return;
+
+        try {
+            out.writeUTF(messaggio);
+            out.flush();
+        } catch (IOException e) {
+            chiudiConnessione();
+        }
+    }
+
+    // Rimuove il client dal server e chiude tutti gli stream/socket
+    public synchronized void chiudiConnessione() {
+        if (!attivo) return;
+        attivo = false;
+
+        server.rimuoviClient(this);
+
+        try {
+            if (in != null) in.close();
+            if (out != null) out.close();
+            if (clientSocket != null && !clientSocket.isClosed()) clientSocket.close();
+        } catch (IOException ignored) {}
+    }
 }
